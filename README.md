@@ -299,5 +299,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 > *"In the construction of these yantras, the precision of mathematical calculation meets the grandeur of architectural vision, creating instruments that bridge the earthly and the celestial."* - Maharaja Jai Singh II
 
 **Built with ❤️ for preserving and sharing India's astronomical heritage**
-#   W E B A P P  
+#   W E B A P P 
+ 
  
