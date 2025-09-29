@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ancient Indian Yantra Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h1>SAMRAT YANTRA 2.0</h1>
+                <span class="nav-subtitle">Ancient Indian Astronomical Instruments</span>
+            </div>
+            <div class="nav-links">
+                <a href="#calculator" class="nav-link active">Calculator</a>
+                <a href="#results" class="nav-link">Results</a>
+                <a href="{{ url_for('documentation') }}" class="nav-link">Documentation</a>
+                <a href="{{ url_for('about') }}" class="nav-link">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">Calculate Ancient Indian Yantra Dimensions</h1>
+                <p class="hero-subtitle">
+                    Generate precise specifications for astronomical instruments like Samrat Yantra, Rama Yantra, 
+                    and others based on your geographical location. Revive the ancient science of astronomical 
+                    timekeeping and celestial observation.
+                </p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">4</span>
+                        <span class="stat-label">Yantra Types</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label">Historical Sites</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">±20s</span>
+                        <span class="stat-label">Time Accuracy</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calculator Section -->
+        <section id="calculator" class="calculator-section">
+            <div class="section-header">
+                <h2>Yantra Calculator</h2>
+                <p>Enter your coordinates or select from historical sites</p>
+            </div>
+
+            <div class="calculator-container">
+                <!-- Input Panel -->
+                <div class="input-panel">
+                    <div class="input-group">
+                        <label for="latitude">Latitude (°)</label>
+                        <input type="number" id="latitude" placeholder="e.g., 26.9124 (Jaipur)" 
+                               min="-90" max="90" step="0.0001">
+                        <span class="input-help">Range: -90° to 90° (North is positive)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="longitude">Longitude (°)</label>
+                        <input type="number" id="longitude" placeholder="e.g., 75.7873 (Jaipur)" 
+                               min="-180" max="180" step="0.0001">
+                        <span class="input-help">Range: -180° to 180° (East is positive)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="scale">Scale Factor</label>
+                        <input type="number" id="scale" placeholder="1.0" min="0.1" max="10" step="0.1" value="1.0">
+                        <span class="input-help">1.0 = Original size, 0.5 = Half size, 2.0 = Double size</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button id="calculate-btn" class="primary-button">
+                            <span class="button-icon">⚙️</span>
+                            Calculate Yantras
+                        </button>
+                        <button id="get-location-btn" class="secondary-button">
+                            <span class="button-icon">📍</span>
+                            Use My Location
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Map Panel -->
+                <div class="map-panel">
+                    <div id="map" class="map-container"></div>
+                    <div class="map-controls">
+                        <h4>Historical Sites</h4>
+                        <div class="site-buttons">
+                            {% for site_name, site_data in historical_sites.items() %}
+                            <button class="site-button" 
+                                    data-lat="{{ site_data.latitude }}" 
+                                    data-lng="{{ site_data.longitude }}"
+                                    data-name="{{ site_name }}">
+                                {{ site_name.replace('_', ' ') }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results" class="results-section" style="display: none;">
+            <div class="section-header">
+                <h2>Calculated Yantra Specifications</h2>
+                <p>Detailed dimensions and construction notes for your location</p>
+            </div>
+
+            <div class="results-container">
+                <div class="location-info">
+                    <h3>Location Details</h3>
+                    <div id="location-details"></div>
+                </div>
+
+                <div class="yantra-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-yantra="samrat">Samrat Yantra</button>
+                        <button class="tab-button" data-yantra="rama">Rama Yantra</button>
+                        <button class="tab-button" data-yantra="digamsa">Digamsa Yantra</button>
+                        <button class="tab-button" data-yantra="dhruva">Dhruva Yantra</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Individual yantra results will be populated here -->
+                    </div>
+                </div>
+
+                <div class="visualization-panel">
+                    <div class="viz-tabs">
+                        <button class="viz-tab active" data-viz="2d">2D Blueprint</button>
+                        <button class="viz-tab" data-viz="3d">3D Model</button>
+                        <button class="viz-tab" data-viz="solar">Solar Chart</button>
+                    </div>
+                    <div id="visualization-container">
+                        <div id="blueprint-view" class="viz-content active">
+                            <!-- 2D technical drawings -->
+                        </div>
+                        <div id="model-view" class="viz-content">
+                            <!-- 3D model rendering -->
+                        </div>
+                        <div id="solar-view" class="viz-content">
+                            <!-- Solar path visualization -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <h3>Export Results</h3>
+                <div class="export-buttons">
+                    <button id="export-pdf" class="export-button">
+                        📄 Export as PDF
+                    </button>
+                    <button id="export-json" class="export-button">
+                        💾 Download JSON
+                    </button>
+                </div>
+                <p class="export-description">
+                    Download your yantra calculations as a comprehensive PDF report or raw JSON data for further processing.
+                </p>
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section class="comparison-section">
+            <div class="section-header">
+                <h2>Compare Historical Sites</h2>
+                <p>See how yantra dimensions vary across different locations</p>
+            </div>
+            <div class="comparison-container">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Calculating yantra dimensions...</p>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Error</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="error-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Ancient Indian Astronomy</h4>
+                <p>Reviving the mathematical precision of historical astronomical instruments.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Historical Context</h4>
+                <p>Ujjain was the prime meridian of ancient India, the reference point for all timekeeping.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Precision</h4>
+                <p>These calculations achieve the same accuracy as the original 18th-century instruments.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Yantra Calculator - Bridging Ancient Wisdom with Modern Technology</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Initialize with historical sites data
+        window.historicalSites = {{ historical_sites|tojson }};
+        window.ujjainReference = {{ ujjain_reference|tojson }};
+    </script>
+</body>
+</html>
